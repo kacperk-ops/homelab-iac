@@ -14,6 +14,10 @@ ingress:
   enabled: true
   hosts:
     - host: {{ gitea_domain }}
+  tls:
+    - secretName: gitea-ssl-secret
+      hosts:
+        - {{ gitea_domain }}
 
 postgresql-ha:
   enabled: false

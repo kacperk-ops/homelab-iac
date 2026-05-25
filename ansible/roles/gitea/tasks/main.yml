@@ -8,7 +8,33 @@
       metadata:
         name: gitea
 
-- name: Create gitea secret
+- name: Generate certificate for gitea
+  command: "mkcert -cert-file /tmp/gitea.crt -key-file /tmp/gitea.key {{ gitea_domain }}"
+
+- name: Read certificate files with elevated privileges
+  become: yes
+  ansible.builtin.slurp:
+    src: "{{ item.src }}"
+  register: cert_files
+  loop:
+    - { src: '/tmp/gitea.crt', name: 'crt' }
+    - { src: '/tmp/gitea.key', name: 'key' }
+
+- name: Create gitea ssl secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gitea-ssl-secret
+        namespace: gitea
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ (cert_files.results | selectattr('item.name', 'equalto', 'crt') | first).content }}"
+        tls.key: "{{ (cert_files.results | selectattr('item.name', 'equalto', 'key') | first).content }}"
+
+- name: Create gitea credential secret
   kubernetes.core.k8s:
     state: present
     definition:
@@ -54,4 +80,3 @@
     release_namespace: gitea
     create_namespace: false
     values: "{{ lookup('template', 'runner.j2') | from_yaml  }}"
-    
