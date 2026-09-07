@@ -19,6 +19,7 @@
   loop:
     - { src: '/tmp/gitea.crt', name: 'crt' }
     - { src: '/tmp/gitea.key', name: 'key' }
+    - { src: "{{ ca_cert_path }}", name: 'ca' }
 
 - name: Create gitea ssl secret
   kubernetes.core.k8s:
@@ -33,6 +34,19 @@
       data:
         tls.crt: "{{ (cert_files.results | selectattr('item.name', 'equalto', 'crt') | first).content }}"
         tls.key: "{{ (cert_files.results | selectattr('item.name', 'equalto', 'key') | first).content }}"
+
+- name: Create CA secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gitea-ca-secret
+        namespace: gitea
+      type: Opaque
+      data:
+        ca.crt: "{{ (cert_files.results | selectattr('item.name', 'equalto', 'ca') | first).content }}"
 
 - name: Create gitea credential secret
   kubernetes.core.k8s:
@@ -80,3 +94,16 @@
     release_namespace: gitea
     create_namespace: false
     values: "{{ lookup('template', 'runner.j2') | from_yaml  }}"
+
+- name: Patch CoreDNS to resolve Gitea on external DNS
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: coredns-custom
+        namespace: kube-system
+      data:
+        gitea.override: |
+          rewrite name {{ gitea_domain }} traefik.kube-system.svc.cluster.local
