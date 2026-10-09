@@ -1,0 +1,6 @@
+server: "https://{{ k3s_server_host }}:6443"
+token: "{{ k3s_token }}"
+kubelet-arg:
+{% for arg in k3s_agent_kubelet_args %}
+  - "{{ arg }}"
+{% endfor %}

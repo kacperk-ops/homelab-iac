@@ -1,6 +1,7 @@
 terraform/.terraform/
 terraform/terraform.tfstate*
 terraform/terraform.tfstate.backup
+terraform.tfstate.pre-migration
 terraform/terraform.tfvars
 terraform/.terraform.lock.hcl
 *.tfvars

@@ -1,0 +1,10 @@
+---
+k3s_install_script_url: https://get.k3s.io
+k3s_install_script_path: /usr/local/bin/k3s-install.sh
+
+k3s_server_host: "{{ hostvars[groups['server'][0]].ansible_host | default(groups['server'][0]) }}"
+
+k3s_agent_kubelet_args:
+  - "system-reserved=cpu=100m,memory=256Mi"
+  - "kube-reserved=cpu=100m,memory=256Mi"
+  - "eviction-hard=memory.available<200Mi,nodefs.available<10%,imagefs.available<15%,nodefs.inodesFree<5%"

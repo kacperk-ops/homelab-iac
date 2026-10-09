@@ -1,0 +1,82 @@
+---
+- name: Install tools required for disk resizing
+  ansible.builtin.apt:
+    name: [cloud-guest-utils, lvm2]
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
+- name: Grow /dev/sdb1 to fill the disk
+  ansible.builtin.command: "growpart {{ root_disk }} {{ root_part_num | default(1) }}"
+  register: growpart_result
+  changed_when: "'CHANGED' in growpart_result.stdout"
+  failed_when:
+    - growpart_result.rc != 0
+    - "'NOCHANGE' not in growpart_result.stdout"
+  become: true
+
+- name: Extend physical volume
+  ansible.builtin.command: "pvresize {{ root_pv }}"
+  register: pvresize_result
+  changed_when: "'1 physical volume(s) resized' in pvresize_result.stdout"
+  become: true
+
+- name: Resize VG and LV to use all free space
+  community.general.lvol:
+    vg: "{{ root_vg }}"
+    lv: "{{ root_lv }}"
+    size: +100%FREE
+    resizefs: true
+  become: true
+
+- name: Disable swap if enabled #as recommended in https://github.com/k3s-io/k3s-ansible/issues/147
+  block:
+    - name: Disable swap
+      ansible.builtin.command: swapoff -a
+      become: true
+
+    - name: Disable swap permanently
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*swap.*)$'
+        replace: '# \1'
+      become: true
+  when: ansible_facts["swaptotal_mb"] > 0
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name: [curl, ca-certificates, qemu-guest-agent, chrony, open-iscsi, nfs-common]
+    state: present
+  become: true
+
+- name: Enable and start required services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: [qemu-guest-agent, chrony]
+  become: true
+
+- name: Load kernel modules on startup
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k3s.conf
+    content: |
+      overlay
+      br_netfilter
+    mode: "0644"
+  become: true
+
+- name: Load kernel modules now
+  community.general.modprobe:
+    name: "{{ item }}"
+  loop: [overlay, br_netfilter]
+  become: true
+
+- name: Set sysctl values for k3s
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/99-k3s.conf
+    reload: true
+  loop: "{{ k3s_sysctl | dict2items }}"
+  become: true

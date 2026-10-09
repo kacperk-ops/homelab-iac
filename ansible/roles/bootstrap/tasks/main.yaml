@@ -1,0 +1,107 @@
+---
+- name: Add MetalLB helm repo
+  kubernetes.core.helm_repository:
+    name: metallb
+    repo_url: https://metallb.github.io/metallb
+
+- name: Install MetalLB helm chart
+  kubernetes.core.helm:
+    name: metallb
+    chart_ref: metallb/metallb
+    chart_version: "{{ metallb_chart_version }}"
+    release_namespace: metallb-system
+    create_namespace: true
+    wait: true
+
+- name: Configure MetalLB IPAddressPool
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: IPAddressPool
+      metadata:
+        name: default
+        namespace: metallb-system
+      spec:
+        addresses:
+          - "{{ metallb_ip_range }}"
+
+- name: Configure MetalLB L2Advertisement
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: metallb.io/v1beta1
+      kind: L2Advertisement
+      metadata:
+        name: default
+        namespace: metallb-system
+      spec:
+        ipAddressPools:
+          - default
+
+- name: Add Traefik helm repo
+  kubernetes.core.helm_repository:
+    name: traefik
+    repo_url: https://traefik.github.io/charts
+
+- name: Install Traefik helm chart
+  kubernetes.core.helm:
+    name: traefik
+    chart_ref: traefik/traefik
+    chart_version: "{{ traefik_chart_version }}"
+    release_namespace: kube-system
+    create_namespace: false
+    wait: true
+    values:
+      providers:
+        kubernetesIngress:
+          enabled: false
+        kubernetesGateway:
+          enabled: true
+      gateway:
+        enabled: true
+        name: traefik-gw
+        listeners:
+          web:
+            namespacePolicy:
+              from: All
+
+- name: Add ArgoCD helm repo
+  kubernetes.core.helm_repository:
+    name: argo
+    repo_url: https://argoproj.github.io/argo-helm
+
+- name: Install ArgoCD helm chart
+  kubernetes.core.helm:
+    name: argocd
+    chart_ref: argo/argo-cd
+    chart_version: "{{ argocd_chart_version }}"
+    release_namespace: argocd
+    create_namespace: true
+    wait: true
+    values:
+      global:
+        domain: argocd.lab.home
+      configs:
+        params:
+          server.insecure: true
+
+- name: HTTPRoute for ArgoCD
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: argocd-http-route
+        namespace: argocd
+      spec:
+        parentRefs:
+          - name: traefik-gw
+            namespace: kube-system
+        hostnames:
+          - argocd.lab.home
+        rules:
+          - backendRefs:
+              - name: argocd-server
+                port: 80

@@ -1,0 +1,13 @@
+cluster-init: true
+token: "{{ k3s_token }}"
+tls-san:
+  - "{{ ansible_host }}"
+  - "{{ inventory_hostname }}"
+disable:
+  - traefik
+  - servicelb
+secrets-encryption: true
+node-taint:
+  - "{{ k3s_node_taint }}"
+etcd-snapshot-schedule-cron: "{{ k3s_etcd_snapshot_cron }}"
+etcd-snapshot-retention: {{ k3s_etcd_snapshot_retention }}

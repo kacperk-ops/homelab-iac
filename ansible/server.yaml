@@ -1,0 +1,6 @@
+---
+- name: k3s server
+  hosts: server
+  become: true
+  roles:
+    - server

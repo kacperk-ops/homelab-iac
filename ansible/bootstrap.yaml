@@ -1,0 +1,6 @@
+---
+- name: k3s bootstrap
+  hosts: localhost
+  connection: local
+  roles:
+    - bootstrap
