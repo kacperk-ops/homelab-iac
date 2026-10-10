@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb
+  namespace: argocd
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://metallb.github.io/metallb
+    chart: metallb/metallb
+    targetRevision: 0.16.1
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: metallb-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
