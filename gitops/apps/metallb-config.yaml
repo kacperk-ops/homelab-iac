@@ -9,7 +9,7 @@ spec:
     repoURL: https://github.com/kacperk-ops/homelab-iac.git
     targetRevision: HEAD
     path: gitops/config/metallb
-    destinations:
+    destination:
       - server: https://kubernetes.default.svc
         namespace: metallb-system
   syncPolicy:
