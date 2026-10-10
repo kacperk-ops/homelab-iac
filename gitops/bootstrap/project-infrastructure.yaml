@@ -6,14 +6,10 @@ metadata:
 spec:
   description: Project for infrastructure applications
   sourceRepos:
-    - https://github.com/kacperk-ops/homelab-iac.git
-    - https://argoproj.github.io/argo-helm 
-    - https://bitnami-labs.github.io/sealed-secrets/
+    - "*"
   destinations:
     - server: https://kubernetes.default.svc
-      namespace: argocd
-    - server: https://kubernetes.default.svc
-      namespace: kube-system
+      namespace: "*"
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'
