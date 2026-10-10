@@ -66,3 +66,17 @@
   delay: 5
   changed_when: false
   delegate_to: "{{ groups['server'][0] }}"
+
+- name: Install packages required for Longhorn
+  ansible.builtin.apt:
+    name: [nfs-common, open-iscsi, cryptsetup, dmsetup]
+    state: present
+  become: true
+
+- name: Enable and start required services for Longhorn
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: [iscsid]
+  become: true
