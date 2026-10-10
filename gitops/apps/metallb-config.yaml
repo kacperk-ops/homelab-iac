@@ -10,8 +10,8 @@ spec:
     targetRevision: HEAD
     path: gitops/config/metallb
   destination:
-    - server: https://kubernetes.default.svc
-      namespace: metallb-system
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
   syncPolicy:
     automated:
       prune: false

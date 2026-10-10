@@ -10,8 +10,8 @@ spec:
     chart: metallb/metallb
     targetRevision: 0.16.1
   destination:
-    - server: https://kubernetes.default.svc
-      namespace: metallb-system
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
