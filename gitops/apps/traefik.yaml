@@ -33,7 +33,7 @@ spec:
                 from: All
               hostname: "*.lab.home"
               mode: Terminate
-              certficateRef:
+              certficateRefs:
                 - name: wildcard-lab-home-cert
                   kind: Secret
   destination:
