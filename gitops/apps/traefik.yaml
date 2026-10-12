@@ -19,11 +19,21 @@ spec:
             enabled: true
         gateway:
           enabled: true
+          annotation:
+            cert-manager.io/cluster-issuer: mkcert-ca
           name: traefik-gw
           listeners:
             web:
               namespacePolicy:
                 from: All
+            websecure:
+              namespacePolicy:
+                from: All
+              hostname: "*.lab.home"
+              mode: Terminate
+              certficateRef:
+                - name: wildcard-lab-home-cert
+                  kind: Secret
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
