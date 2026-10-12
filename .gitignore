@@ -26,3 +26,5 @@ Thumbs.db
 *.swp
 
 k3s/
+
+gitops/config/cert-manager/ca-cert-secret.yaml
