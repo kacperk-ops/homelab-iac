@@ -19,7 +19,7 @@ spec:
             enabled: true
         gateway:
           enabled: true
-          annotation:
+          annotations:
             cert-manager.io/cluster-issuer: mkcert-ca
           name: traefik-gw
           listeners:
