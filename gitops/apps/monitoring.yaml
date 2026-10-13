@@ -22,7 +22,7 @@ spec:
             windows: false
             kubeProxy: false
             kubeControllerManager: false
-            kubeScheduler: false
+            kubeSchedulerAlerting: false
         prometheus:
           route:
             main:
