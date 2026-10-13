@@ -20,6 +20,9 @@ spec:
         defaultRules:
           rules:
             windows: false
+            kubeProxy: false
+            kubeControllerManager: false
+            kubeScheduler: false
         prometheus:
           route:
             main:
