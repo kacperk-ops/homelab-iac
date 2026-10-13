@@ -17,6 +17,10 @@ spec:
         grafana:
           admin:
             existingSecret: grafana-admin
+          persistence:
+            enabled: true
+            size: 5Gi
+            storageClassName: local-path
         defaultRules:
           rules:
             windows: false
