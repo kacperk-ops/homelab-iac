@@ -36,6 +36,7 @@ spec:
               certificateRefs:
                 - name: wildcard-lab-home-cert
                   kind: Secret
+                  group: ''
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
