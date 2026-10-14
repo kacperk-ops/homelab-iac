@@ -28,3 +28,5 @@ Thumbs.db
 k3s/
 
 gitops/config/cert-manager/ca-cert-secret.yaml
+gitops/config/monitoring/grafana-admin-secret.yaml
+gitops/config/gitea/gitea-admin-secret.yaml

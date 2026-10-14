@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitea-config
+  namespace: argocd
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://github.com/kacperk-ops/homelab-iac.git
+    targetRevision: HEAD
+    path: gitops/config/gitea
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitea
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
